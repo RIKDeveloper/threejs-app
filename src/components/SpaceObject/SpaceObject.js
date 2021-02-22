@@ -20,14 +20,14 @@ export default (props)=>{
                     O: {limit:item.props.limitTimeOrbit||365000, indent: item.props.indent||'0'},
                     R: {limit:item.props.limitTimeRotation||1000}
                 })
-                children.push(<mesh>{item}</mesh>)
+                children.push(<mesh name={item.name}>{item}</mesh>)
             }
         } else{
             childrenOptions.push({
                 O: {limit:props.children.props.limitTimeOrbit||365000, indent: props.children.props.indent||'0'},
                 R: {limit:props.children.props.limitTimeRotation||1000}
             })
-            children.push(<mesh>{props.children}</mesh>)
+            children.push(<mesh name={props.children.props.name}>{props.children}</mesh>)
         }
     }
 
@@ -37,8 +37,23 @@ export default (props)=>{
         const nowTime = new Date().getTime()
 
         if(!props.stop){
+            ref.current.rotation.y = (nowTime % options.R.limit * (6.3 / options.R.limit).toFixed(7))
             ref.current.position.z = +options.O.indent * Math.cos((2 * Math.PI) / options.O.limit * nowTime) + options.O.center.z
             ref.current.position.x = +options.O.indent * Math.sin((2 * Math.PI) / options.O.limit * nowTime) + options.O.center.x
+
+            if(props.children){
+                const parent = ref.parent
+                // console.log(ref.current.parent.children)
+                for (let id in ref.current.parent.children){
+                    if (id == 0)
+                        continue
+                    const item = ref.current.parent.children[id]
+                    console.log(id)
+                    item.rotation.y = nowTime % options.R.limit * (6.3 / options.R.limit).toFixed(7)
+                    item.position.x = +childrenOptions[id-1].O.indent * Math.sin((2 * Math.PI) / childrenOptions[id-1].O.limit * nowTime) + ref.current.position.x
+                    item.position.z = +childrenOptions[id-1].O.indent * Math.cos((2 * Math.PI) / childrenOptions[id-1].O.limit * nowTime) + ref.current.position.z
+                }
+            }
         }
     })
 
